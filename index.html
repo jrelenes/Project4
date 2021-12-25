@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="//rawgithub.com/Caged/d3-tip/master/examples/example-styles.css">
+        <style>
+        .loader {
+          border: 16px solid #f3f3f3;
+          border-radius: 50%;
+          border-top: 16px solid #3498db;
+          width: 50px;
+          height: 50px;
+          margin-left: auto;
+          margin-right: auto;
+          vertical-align: middle;
+          -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+        }
+        
+        #Region {
+
+          background-color: #bbbec3;
+          color: black;
+
+        }
+
+        #X {
+
+          background-color: #bbbec3;
+          color: black;
+        }
+
+        #Y {
+
+          background-color: #bbbec3;
+          color: black;
+        }
+
+
+        #play {
+
+          background-color: #bbbec3;
+          color: black;
+        }
+
+
+        #Year {
+
+          background-color: #bbbec3;
+          color: black;
+        }
+
+        .yaxis line {
+            stroke: black;  
+        }
+
+        .yaxis path {
+            stroke: black;  
+        }
+
+        .yaxis text {
+            stroke: black;  
+        }
+
+        .xaxis line {
+            stroke: black;  
+        }
+
+        .xaxis path {
+            stroke: black;  
+        }
+
+        .xaxis text {
+            stroke: black;  
+        }
+
+
+        
+        /* Safari */
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        </style>
+        <meta charset="utf-8">
+        <title>d3 Scatter Plot</title>
+        <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+        <!-- Styles for our vis  -->
+        <style>
+        body {
+            font: 15px sans-serif;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+        .dot {
+            stroke: none;
+        }
+        .tooltip {
+            position: absolute;
+            font-size: 12px;
+            width:  auto;
+            height: auto;
+            pointer-events: none;
+            background-color: white;
+        }
+         </style>
+    </head>
+    <body>
+
+
+              <input id='Year' type='number' value='2000' style= "width:50px;"></input>
+              <!-- 1889 -2015 -->
+              <select id="Region" style = "width:100px;"></select>
+              <select id ="X" style = "width:100px;"></select>
+              <select id="Y" style = "width:100px;"></select>
+              <button class="button" id="play">Play</button>
+              <div class="loader"></div>           
+
+
+
+
+
+
+      <div id="vis-container"></div>
+
+
+
+        <!-- Optionally reference your vis JS file here, or define in a script tag -->
+        <!-- <script type="text/javascript" src="js/my-vis.js"></script> -->
+        <script type="text/javascript">
+
+       
+        pass = 0
+
+
+        /////////////////////////////////////////////////////
+        // Common pattern for defining vis size and margins
+        var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+                  width  = 780 - margin.left - margin.right,
+                  height = 530 - margin.top - margin.bottom;
+
+
+              // Add the visualization svg canvas to the vis-container <div>
+              var canvas = d3.select("#vis-container").append("svg")
+                  .attr("width",  width  + margin.left + margin.right)
+                  .attr("height", height + margin.top  + margin.bottom)
+                .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            
+
+            //////////////////////////////////////////
+
+        
+      
+            //1st csv
+            d3.csv('data/lung_cancer_deaths_per_100000_men.csv').then(data1 => {
+            DataStructure = []
+          
+            data1.forEach(element => {
+              temp = Object.keys(element)
+              temp.forEach(year => {
+                if (year != 'country') {
+                  DataStructure.push({'country': element['country'],'lungCancer':  +element[year],year : +year})
+                }
+              })
+            });
+
+              //2nd csv
+                d3.csv('data/life_expectancy_years.csv').then(data2 => {
+                DataStructure1 = []
+              
+                data2.forEach(element => {
+                  temp = Object.keys(element)
+                  temp.forEach(year => {
+                    if (year != 'country') {
+                      DataStructure1.push({'country': element['country'],'lifeExpectancy':  +element[year],year : +year})
+                    }
+                  })
+                });
+
+                  //3rd csv
+                    d3.csv('data/at_least_basic_water_source_rural_access_percent.csv').then(data3 => {
+                    DataStructure2 = []
+                  
+                    data3.forEach(element => {
+                      temp = Object.keys(element)
+                      temp.forEach(year => {
+                        if (year != 'country' ) {
+                          DataStructure2.push({'country': element['country'],'water':  +element[year],year : +year})
+                        }
+                      })
+                    });
+
+                        //4th csv
+                        d3.csv('data/income_per_person_gdppercapita_ppp_inflation_adjusted.csv').then(data4 => {
+                        DataStructure3 = []
+                      
+                        data4.forEach(element => {
+                          temp = Object.keys(element)
+                          temp.forEach(year => {
+                            if (year != 'country') {
+                              DataStructure3.push({'country': element['country'],'inflation':  +element[year],year : +year})
+                            }
+                          })
+                        });
+
+
+                              //5th csv
+                              d3.csv('data/countries_regions.csv').then(data5 => {
+                                  DataStructure4 = []
+                                  allGroup = []
+                                
+                                  data5.forEach(region => {
+
+                                        //console.log(region)
+                                        DataStructure4.push(region)
+                                        allGroup.push(region['World bank region'])
+
+    
+                                  });
+
+
+                                  
+
+                                  struct = []
+                                  DataStructure.forEach(d =>{
+
+
+                                      DataStructure4.forEach(e =>{
+
+
+                                          if(d.country === e.name){
+                                            struct.push({'country': d['country'], "lungCancer" :  +d["lungCancer"], "geo" : e["geo"] ,"region": e["World bank region"],'year' : d['year']})
+
+                                          }
+
+
+                                      });
+
+
+
+                                  });
+
+
+                                  struct3 = []
+                                  DataStructure3.forEach(d =>{
+
+
+                                      DataStructure4.forEach(e =>{
+
+
+                                          if(d.country === e.name){
+                                            struct3.push({'country': d['country'], "inflation" :  +d["inflation"], "geo" : e["geo"] ,"region": e["World bank region"],'year' : d['year']})
+
+                                          }
+
+
+                                      });
+
+
+
+                                  });
+
+                                  struct1 = []
+                                  DataStructure1.forEach(d =>{
+
+
+                                      DataStructure4.forEach(e =>{
+
+
+                                          if(d.country === e.name){
+                                            struct1.push({'country': d['country'], "lifeExpectancy" :  +d["lifeExpectancy"], "geo" : e["geo"] ,"region": e["World bank region"],'year' : d['year']})
+
+                                          }
+
+
+                                      });
+
+
+
+                                  });
+
+
+                                  struct2 = []
+                                  DataStructure2.forEach(d =>{
+
+
+                                      DataStructure4.forEach(e =>{
+
+
+                                          if(d.country === e.name){
+                                            struct2.push({'country': d['country'], "water" :  +d["water"], "geo" : e["geo"] ,"region": e["World bank region"],'year' : d['year']})
+
+                                          }
+
+
+                                      });
+
+
+
+                                  });
+                                  //console.log(DataStructure4[0]['World bank region'])
+                                  var mySet = new Set(allGroup)
+
+                                  reg = []
+                                  reg.push("All")
+                                  mySet.forEach(h =>{
+
+                                    reg.push(h)
+
+                                  });
+
+                                  var updatedYear = d3.select("#Year").property("value")
+                                  var dropdownButton = d3.select("#Region")
+                                  //console.log(DataStructure3)
+
+                                  dropdownButton
+                                  .selectAll('myOptions')
+                                  .data(reg)
+                                  .enter()
+                                  .append('option')
+                                  .text(function (d) { return d; }) // text showed in the menu
+                                  .attr("region", function (d) { return d; }) // 
+
+                                  
+
+
+                                  var xy = ["Lung Cancer", "Rural Basic Water Access","Income per person", "Life expectancy"]
+                                  var xy1 = ["Life expectancy", "Rural Basic Water Access","Income per person", "Lung Cancer"]
+
+                                  var dropdownButton = d3.select("#X")
+
+                                  dropdownButton
+                                  .selectAll('myOptions')
+                                  .data(xy)
+                                  .enter()
+                                  .append('option')
+                                  .text(function (d) { return d; }) // text showed in the menu
+                                  .attr("X", function (d) { return d; }) // 
+
+
+                                  var dropdownButton = d3.select("#Y")
+
+                                  dropdownButton
+                                  .selectAll('myOptions')
+                                  .data(xy1)
+                                  .enter()
+                                  .append('option')
+                                  .text(function (d) { return d; }) // text showed in the menu
+                                  .attr("Y", function (d) { return d; }) // 
+                                 
+                                  test("2000","All","Lung Cancer","Life expectancy")
+                                  
+
+                                  var first = false
+                                  d3.select("#Year").on("change", function(d) {
+                                      var year = d3.select(this).property("value")
+                                      var region = d3.select("#Region").property("value")
+                                      var x = d3.select("#X").property("value")
+                                      var y = d3.select("#Y").property("value")
+
+                                     
+
+                                      
+                                  
+
+                                      time = Number(year)
+
+                                      //console.log(first)
+                                      test(year,region,x,y,true)
+                                      
+                                  })
+                                 
+
+                                  var global = false
+                                  var seen = []
+                                  d3.select("#Region").on("change", function(d) {
+                                      var year = d3.select("#Year").property("value")
+                                      var region = d3.select(this).property("value")
+                                      var x = d3.select("#X").property("value")
+                                      var y = d3.select("#Y").property("value")
+                                      // d3.select(".dot").remove();
+                                      // d3.select("xaxis").remove();
+
+                                    
+                                      
+                                      canvas.selectAll('.dot').transition().duration( 1000 ).style("opacity", 0);
+                                      canvas.selectAll('text').transition().duration( 1000 ).style("opacity", 0);
+
+
+                                      
+                                      d3.selectAll( ".dot" ).transition().delay( 1000 ).remove();
+                                      d3.selectAll( "text" ).transition().delay( 1000 ).remove();
+
+                                      InitializationAll = true
+                                      d3.selectAll("text").remove();
+                                      d3.selectAll(".dot").remove();
+                                      
+
+                                      //console.log("1")
+
+
+                                      // test(year,region,x,y)
+                                      setTimeout(function(){
+                                        
+                                        
+                                        //removes axis
+                                        //d3.selectAll("g").remove();
+                                        //d3.selectAll(".xaxis").remove();
+                                        //d3.selectAll(".yaxis").remove();
+
+
+                                        test(year,region,x,y,true);
+                                        canvas.selectAll('.dot').style("opacity", 0);
+                                        canvas.selectAll('text').style("opacity", 0);
+                                        
+
+
+                                        canvas.selectAll('.dot').transition().duration( 1000 ).style("opacity", 1);
+                                        canvas.selectAll('text').transition().duration( 1000 ).style("opacity", 1);
+
+                                      
+                                     }, 1300);
+
+                                      //console.log("2")
+
+
+                                     
+
+                                      canvas.selectAll('.dot')
+                                        .transition()
+                                        .duration(1000)
+                                        .ease(d3.easeLinear)
+                                        .style("opacity", 1);
+
+                                      canvas.selectAll('text')
+                                        .transition()
+                                        .duration(1000)
+                                        .ease(d3.easeLinear)
+                                        .style("opacity", 1);
+
+                                     
+                                      
+                                  })
+
+                                  d3.select("#X").on("change", function(d) {
+                                      var year = d3.select("#Year").property("value")
+                                      var region = d3.select("#Region").property("value")
+                                      var x = d3.select(this).property("value")
+                                      var y = d3.select("#Y").property("value")
+                                      // d3.select(".dot").remove();
+                                      // d3.select("xaxis").remove();
+                                      // d3.selectAll(".dot").remove();
+                                      // d3.selectAll("text").remove();
+                                      // canvas.selectAll("g").remove();
+
+
+                                      canvas.selectAll("g").remove();
+                                      d3.selectAll(".dot").remove();
+                                      InitializationAll = true
+                                      d3.selectAll("text").remove();
+
+                                      test(year,region,x,y,false)
+
+                                      
+                                  })
+
+                                  d3.select("#Y").on("change", function(d) {
+                                      var year = d3.select("#Year").property("value")
+                                      var region = d3.select("#Region").property("value")
+                                      var x = d3.select("#X").property("value")
+                                      var y = d3.select(this).property("value")
+                                      // d3.select(".dot").remove();
+                                      // d3.select("xaxis").remove();
+                                      //d3.selectAll(".dot").remove();
+                                      //d3.selectAll("text").remove();
+
+                                      canvas.selectAll("g").remove();
+                                      d3.selectAll(".dot").remove();
+                                      InitializationAll = true
+                                      d3.selectAll("text").remove();
+
+                                      test(year,region,x,y,false)
+
+                                      
+                                  })
+
+                                 
+          
+
+                                
+                                  //delay successful
+                                  d3.select("#play").on("click", function () {
+
+                                        //console.log(play)
+                                        if (play === true){
+                                          play = false
+                                          d3.select('#play').text("Pause");
+                                          intervalBeat = setInterval(pressPlay, 500);
+
+                                        }
+                                        else if (play === false){
+
+                                            play = true
+                                            d3.select('#play').text("Play");
+                                            clearInterval(intervalBeat);
+
+                                        }
+                                        //console.log(intervalBeat)
+                                    });
+                                
+
+                                  
+
+
+                        
+                            })
+
+                            //merge data structures then trim object with any empty
+                            //console.log(DataStructure)
+                            
+                      })
+                  })
+              })
+          })
+
+
+
+
+          
+
+
+
+
+
+          var column = function (X,Y){
+
+            // DataStructure3
+            // DataStructure4
+
+            //console.log(DataStructure)
+            X_colum = []
+            Y_colum = []
+            //      ,income
+
+            //regions = DataStructure4
+
+            if (X === "water"){
+
+              X_colum = struct2
+
+            }
+            else if (X === "inflation"){
+
+              X_colum = struct3
+
+            }
+            else if (X === "lifeExpectancy"){
+
+              X_colum = struct1
+              
+            }
+            else if (X === "lungCancer"){
+
+              X_colum = struct
+              
+            }
+
+            if (Y === "water"){
+
+              Y_colum = struct2
+
+            }
+            else if (Y === "inflation"){
+
+              Y_colum = struct3
+
+            }
+            else if (Y === "lifeExpectancy"){
+
+              Y_colum = struct1
+              
+            }
+            else if (Y === "lungCancer"){
+
+              Y_colum = struct
+              
+            }
+
+            
+
+            
+            local = []
+            X_colum.forEach(i => {
+
+                    Y_colum.forEach(j => {
+
+                          if (i.year === j.year && i.country === j.country) {
+                            local.push({'country': i['country'], "X" :  +i[X],"Y" : +j[Y],"geo" : j["geo"] ,"region": j["region"],'year' : j['year']})
+
+                            }
+
+                    });
+            });
+
+            // local2 = []
+            // //console.log(local)
+            // local.forEach(i => {
+
+            //   regions.forEach(j => {
+
+            //           if (i.country === j.name) {
+            //             local2.push({'country': i['country'], X :  +i["X"],Y : +i["Y"],"geo" : j["geo"] ,"region": j["World bank region"],'year' : i['year']})
+
+            //             }
+
+            //     });
+            // });
+
+
+      /////////////
+            //console.log(local)
+            return local
+
+
+          }
+
+          //time = 1800
+          stopFinal=""
+          var time = Number(d3.select("#Year").property("value"))
+
+          var play = true
+
+          
+          //delay successful
+          function pressPlay() {
+            if (time < 2021) {
+              time += 1;
+            } else {
+              time = 2000
+            }
+
+            //console.log(String(time))
+            var region = d3.select("#Region").property("value")
+            var x = d3.select("#X").property("value")
+            var y = d3.select("#Y").property("value")
+                                      
+            //d3.selectAll(".dot").remove();
+            //d3.selectAll("text").remove();
+
+            d3.select('#Year').property('value', String(time));
+            //canvas.selectAll("g").remove();
+
+            if (time === 2021){
+              clearInterval(intervalBeat);
+              d3.select('#play').text("Play");
+              play = true;
+
+
+
+            }
+
+
+            test(String(time),region,x,y,true)
+
+            // updateChart(allData, time);
+
+          }
+         
+
+
+            //////////////////////////////////////////
+            var newData = []
+            var first = false
+            var test = function(year,region,x,y,cond)
+                                  {
+                                    //console.log(clean4)
+                                    Xaxis = ""
+                                    Yaxis = ""
+                                    //console.log(year,region,x,y)
+                                    if (x === 'Rural Basic Water Access'){
+                                      Xaxis = "water"
+                                    }
+                                    else if (x === 'Income per person'){
+                                      Xaxis = "inflation"
+                                    }
+                                    else if (x === 'Life expectancy'){
+                                      Xaxis = "lifeExpectancy"
+                                    }
+                                    else if (x === 'Lung Cancer'){
+                                      Xaxis = "lungCancer"
+                                    }
+
+
+                                    if (y === 'Rural Basic Water Access'){
+                                      Yaxis = "water"
+                                    }
+                                    else if (y === 'Income per person'){
+                                      Yaxis = "inflation"
+                                    }
+                                    else if (y === 'Life expectancy'){
+                                      Yaxis = "lifeExpectancy"
+                                    }
+                                    else if (y === 'Lung Cancer'){
+                                      Yaxis = "lungCancer"
+                                    }
+
+                                    //console.log(Xaxis, Yaxis)
+
+                                    input = []
+                                    inputAll = []
+                                    RegionAllYears = []
+                                    //////////////////////////
+
+                                    //console.log(cond)
+                                    if (cond === false || first === false){
+                                      first = true
+                                      newData = []
+                                      newData = column(Xaxis,Yaxis)
+                                      //console.log(newData)
+                                    }
+
+                                    if (newData.length > 0){
+
+                                      d3.select(".loader").style("display","none");
+
+
+                                    }
+                                    
+                                    
+
+
+
+
+                                    ///////////////////////////
+
+
+                                    newData.forEach(y => {
+
+
+
+                                      //console.log(y)
+
+                                      if (y.year === +year && y.region === region){
+
+                                        //console.log(y)
+                                        input.push({'country': y['country'], "X" : y["X"], "Y" : y["Y"], 'region' : y['region'],'geo' : y['geo'],year : y['year']   })
+
+                                      }
+
+                                      if (y.year === +year){
+
+                                          //console.log(y)
+                                          inputAll.push({'country': y['country'], "X" : y["X"], "Y" : y["Y"], 'region' : y['region'],'geo' : y['geo'],year : y['year']   })
+
+                                          }
+
+
+                                          if (y.region === region){
+
+                                            //console.log(y)
+                                            RegionAllYears.push({'country': y['country'], "X" : y["X"], "Y" : y["Y"], 'region' : y['region'],'geo' : y['geo'],year : y['year']   })
+
+                                            }
+
+
+                                      
+
+                                    });
+
+
+
+                                    //console.log(input)
+                                    colors = ['red','green','blue','yellow','purple','white','black']
+                                    
+                                    color = ""
+                                    if (region === "South Asia"){
+                                      color = "blue"
+                                    }
+                                    else if (region === "Europe & Central Asia"){
+                                      color = "green"
+                                    }
+                                    else if (region === "Middle East & North Africa"){
+                                      color = "pink"
+                                    }
+                                    else if (region === "Sub-Saharan Africa")
+                                    {
+                                      color = "orange"
+                                    }
+                                    else if (region === "Latin America & Caribbean")
+                                    {
+                                      color = "red"
+                                    }
+                                    else if (region === "East Asia & Pacific")
+                                    {
+                                      color = "purple"
+                                    }
+                                    else if (region === "North America")
+                                    {
+                                      color = "black"
+                                      
+                                    }
+
+                                    
+                                    if (region == "All"){
+
+                                      if (InitializationAll === true){
+                                        makeAxis(newData)
+
+
+                                      }
+                                      makeVis(inputAll,color);
+
+
+                                    }
+                                    else {
+
+
+                                      if (InitializationAll === true){
+                                        makeAxis(RegionAllYears)
+
+
+                                      }
+                                      makeVis(input,color);
+
+                                    }
+                                    
+
+                                  }
+
+          
+  
+
+
+         
+
+            
+          // }
+          var xScale = d3.scaleLinear();
+          var yScale = d3.scaleLinear();
+          
+
+          var makeAxis = function (data) {
+
+              console.log("redraw")
+              d3.selectAll(".xaxis").remove();
+              d3.selectAll(".yaxis").remove();
+
+
+              var regionAxis = d3.select("#Region").property("value")
+
+              var x = d3.select("#X").property("value")
+              var y = d3.select("#Y").property("value")
+
+             
+
+                    //nothing
+              xScale.domain([ d3.min(data, function(d) { return d.X; }) - 1,
+                        d3.max(data, function(d) { return d.X; }) + 1 ])
+              .range([0, width]);
+
+                 //yaxis
+              yScale.domain([ d3.min(data, function(d) { return d.Y; }) - 1,
+                        d3.max(data, function(d) { return d.Y; }) + 1 ])
+              .range([height, 0]); // flip order because y-axis origin is upper LEFT
+      
+            
+              
+
+              //all years for region
+              //allRegionYears = []
+              // Define our axes
+              var xAxis = d3.axisBottom()
+                  .scale(xScale);
+
+              var yAxis = d3.axisLeft()
+                  .scale(yScale);
+
+              /////////////////////
+              //var xaxis = canvas.selectAll(".dot").data(data)
+
+              ///////////////////////
+
+              // Add x-axis to the canvas
+              canvas.append("g")
+                  .attr("class", "xaxis")
+                  .attr("transform", "translate(0," + height + ")") // move axis to the bottom of the canvas
+                  .call(xAxis)
+                .append("text")
+                  .attr("class", "label1")
+                  .attr("x", width) // x-offset from the xAxis, move label all the way to the right
+                  .attr("y", -0)    // y-offset from the xAxis, moves text UPWARD!
+                  .style("text-anchor", "end") // right-justify text
+                  .text(x)
+
+              // Add y-axis to the canvas
+              canvas.append("g")
+                  .attr("class", "yaxis") // .orient('left') took care of axis positioning for us
+                  .call(yAxis)
+                .append("text")
+                  .attr("class", "label")
+                  .attr("transform", "rotate(-90)") // although axis is rotated, text is not
+                  .attr("y", 15) // y-offset from yAxis, moves text to the RIGHT because it's rotated, and positive y is DOWN
+                  .style("text-anchor", "end")
+                  .text(y)
+
+
+          }
+          
+
+
+          InitializationAll = true
+          var textE
+
+          var makeVis = function(data,color) {
+              //console.log(data.length)
+
+
+
+
+              // Define our scales
+              var colorScale1 = d3.scaleOrdinal(d3.schemeCategory10);
+              var colorScale = d3.scaleOrdinal()
+                      .domain(["South Asia", "Europe & Central Asia", "Middle East & North Africa", "Sub-Saharan Africa","Latin America & Caribbean", "East Asia & Pacific", "North America"])
+                      .range(["#1f76b3", "#2ca02c", "#e377c2", "#ff7f0e","rgba(214,39,40,255)","#9467bd","#8c564b"]);
+
+              /////////////////////////////////////////////////////////////////////
+
+
+              //makeAxis(data)
+              ///////////////////////////
+              ////write in abstract form
+              //console.log(allRegionYears)
+              //console.log(allRegionYears)
+              
+              // Add the tooltip container to the vis container
+              // it's invisible and its position/contents are defined during mouseover
+              
+              var tooltip = d3.select("#vis-container").append("div")
+                  .attr("class", "tooltip")
+                  .style("opacity", 0);
+
+              // tooltip mouseover event handler
+              var tipMouseover = function(d) {
+                  var color = colorScale(d.region);
+                  var html  = d.country;
+
+                  tooltip.html(html)
+                      .style("left", (d3.event.pageX + 15) + "px")
+                      .style("top", (d3.event.pageY - 28) + "px")
+                    .transition()
+                      .duration(200) // ms
+                      .style("opacity", .9) // started as 0!
+
+              };
+              // tooltip mouseout event handler
+              var tipMouseout = function(d) {
+                  tooltip.transition()
+                      .duration(300) // ms
+                      .style("opacity", 0); // don't care about position!
+              };
+
+                          
+                          
+                          //.attr("transform", function(d){return "translate("+d.X+",80)"})
+
+             // var circles = canvas.selectAll(".dot").data(data)
+
+
+              // Add data points!
+              // canvas.selectAll(".dot")
+              //   .data(data)
+              if (data.length > 0){
+
+              
+
+                  if (InitializationAll === true){
+
+                    //makeAxis(data)
+
+                    canvas.selectAll(".circle").data(data).enter()
+                    .append("circle")
+                    .attr("class", "dot")
+                    .attr("r",13) // radius size, could map to another data dimension
+                    .attr("cx", function(d) { return xScale( d.X ); })     // x position
+                    .attr("cy", function(d) { return yScale( d.Y ); })  // y position
+                    //color by region no country
+                    .style("stroke","black")
+                    
+                    //.style("fill", "white")
+                    .style("fill", function(d) { return colorScale(d.region); })
+                    .on("mouseover", tipMouseover)
+                    .on("mouseout", tipMouseout)
+
+                    
+
+                    canvas.selectAll(".circle").data(data).enter()
+                    .append("text")
+                    .style("stroke","black")
+                    .attr("class","temp2")
+                    .attr("x", function(d){return xScale(d.X)-10;})
+                    .attr("y", function(d){return yScale(d.Y)+4;})
+                    .style("font-size", "10px")
+                    .text(function(d) { return d.geo;})
+
+                    canvas.selectAll(".years").remove();
+
+                    canvas.append("text")
+                        .attr("class","years")
+                        .attr("text-anchor", "middle")
+                        .attr('font-size', '10em')
+                        .attr("fill","#bbbec3")
+                        .attr("stroke","#bbbec3")
+                        .attr("font-family", "Saira ExtraBold")
+                        .attr("stroke-width","6px")
+                        .style("z-index", "-1")
+                        .attr('y', 450)
+                        .attr('x', 600)
+                        .text(d3.select("#Year").property("value"));
+
+
+
+
+                    InitializationAll = false
+
+                  }
+                  else{
+
+                    canvas.selectAll("circle").data(data)
+                    .attr("class", "dot")
+                    .attr("r",13) // radius size, could map to another data dimension
+                    .attr("cx", function(d) { return xScale( d.X ); })     // x position
+                    .attr("cy", function(d) { return yScale( d.Y ); })  // y position
+                    //color by region no country
+                    .style("stroke","black")
+                    
+                    //.style("fill", "white")
+                    .style("fill", function(d) { return colorScale(d.region); })
+                    .on("mouseover", tipMouseover)
+                    .on("mouseout", tipMouseout);
+
+                    canvas.selectAll(".temp2").remove();
+                    canvas.selectAll(".years").remove();
+
+
+
+                    canvas.selectAll(".circle").data(data).enter()
+                    .append("text")
+                    .style("stroke","black")
+                    .attr("class","temp2")
+                    .attr("x", function(d){return xScale(d.X)-10;})
+                    .attr("y", function(d){return yScale(d.Y)+4;})
+                    .style("font-size", "10px")
+                    .text(function(d) { return d.geo;})
+
+                    canvas.append("text")
+                        .attr("class","years")
+                        .attr("text-anchor", "middle")
+                        .attr('font-size', '10em')
+                        .attr("fill","#bbbec3")
+                        .attr("stroke","#bbbec3")
+                        .attr("font-family", "Saira ExtraBold")
+                        .attr("stroke-width","6px")
+                        .style("z-index", "-1")
+                        .attr('y', 450)
+                        .attr('x', 600)
+                        .text(d3.select("#Year").property("value"));
+
+
+                  }
+
+
+              }
+              else{
+                alert("Object has no instances");
+              }
+
+              
+                ///////////////////////////////////////////////end of abstract form
+                // canvas.append("text")
+                //   .attr("dx", function(d){return -20})
+                //   .text("YYYY")
+
+                //console.log(data[0].geo)
+                
+
+                
+
+          };
+
+        </script>
+    </body>
+</html>
